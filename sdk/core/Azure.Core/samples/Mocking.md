@@ -2,7 +2,9 @@
 
 **NOTE:** Samples in this file apply only to packages that follow [Azure SDK Design Guidelines](https://azure.github.io/azure-sdk/dotnet_introduction.html). Names of such packages usually start with `Azure`. 
 
-## Creating a mock of the client using Moq
+## Moq
+
+### Creating a mock of the client
 
 You can use a combination of model factory and `Mock` class to create a mock of a client:
 
@@ -27,7 +29,7 @@ SecretClient client = mock.Object;
 KeyVaultSecret secret = client.GetSecret("Name");
 ```
 
-## Creating a mock of the method that returns Pageable
+### Creating a mock of the method that returns Pageable
 
 For methods that return instances of `Pageable` or `AsyncPageable`, `[Async]Pageable<T>.FromPages` method can be used to create an instance for test:
 
@@ -52,4 +54,27 @@ mock.Setup(c => c.GetDeletedSecrets(default))
 // Use the client mock
 SecretClient client = mock.Object;
 DeletedSecret deletedSecret = client.GetDeletedSecrets().First();
+```
+
+## NSubstitute
+
+### Creating a mock of the client that returns AsyncPageable
+
+```csharp
+// Create a mock response
+var mockResponse = Substitute.For<Response>();
+
+// Create a mock value
+var mockValue = SearchModelFactory
+    .SearchResults(values, totalCount, facets, coverage, mockResponse);
+
+// Create a client mock
+var mock = Substitute.For<SearchClient>();
+
+// Setup client method
+mock.SearchAsync<SearchDocument>(Arg.Any<string>(), Arg.Any<SearchOptions>())
+    .Returns(mockValue);
+
+// Use the client mock
+AsyncPageable<SearchResult<SearchDocument>> documents = mock.SearchDocumentsAsync<SearchDocument>(options);
 ```
